@@ -1,0 +1,23 @@
+# 这是 webservice 的 toml
+ 
+[package]
+name = "webservice"
+version = "0.1.0"
+edition = "2021"
+
+# 当运行 webservice 时，如果不指名二进制文件，那么首先运行 teacher-service
+default-run = "teacher-service"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+actix-web = "3"
+actix-rt = "1.1.1"
+
+# 指定二进制名称
+[[bin]]
+name = "server1"
+
+# [[bin]] 类似一个数组，可指定多个区域，这里还可以有个 teacher-service
+#[[bin]]
+#name = "teacher-service"

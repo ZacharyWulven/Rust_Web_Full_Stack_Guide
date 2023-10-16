@@ -1,0 +1,4 @@
+# 这是 workspace 的 toml
+
+[workspace]
+members = ["webservice"]
