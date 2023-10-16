@@ -34,7 +34,7 @@ impl<'a> Server<'a> {
             /*
                 调用路由器分发给不同的 handler 
              */
-            Router::router(req, &mut stream);
+            Router::route(req, &mut stream);
         }
     }
 }

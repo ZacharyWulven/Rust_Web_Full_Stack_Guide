@@ -8,3 +8,7 @@ edition = "2021"
 [dependencies]
 # 依赖 workspace 里的 http 库
 http = {path = "../http"} 
+
+# 用于序列化和反序列化
+serde = {version="1.0.131", features=["derive"]}
+serde_json = "1.0.72"
