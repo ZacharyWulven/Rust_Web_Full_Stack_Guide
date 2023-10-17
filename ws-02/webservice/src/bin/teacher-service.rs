@@ -3,7 +3,7 @@ use std::io;
 use std::sync::Mutex;
 
 
-// 定义模块指明路径
+// 定义模块指明路径, 声明模块
 #[path = "../handlers.rs"]
 mod handlers;
 
@@ -12,6 +12,9 @@ mod routers;
 
 #[path = "../state.rs"]
 mod state;
+
+#[path = "../models.rs"]
+mod models;
 
 // 引入 routers 模块所有内容
 use routers::*;
@@ -25,6 +28,7 @@ async fn main() -> io::Result<()> {
         AppState {
             health_check_response: "I'm OK.".to_string(),
             visit_count: Mutex::new(0),
+            courses: Mutex::new(vec![]),
         }
     );
 
@@ -36,7 +40,10 @@ async fn main() -> io::Result<()> {
         configure(general_routes) 即配置它的路由
      */
     let app = move || {
-        App::new().app_data(shared_data.clone()).configure(general_routes)
+        App::new()
+        .app_data(shared_data.clone())
+        .configure(general_routes)  // 添加路由注册，general_routes 就是  routers 里的方法
+        .configure(course_routes)
     };
 
     HttpServer::new(app).bind("localhost:3000")?.run().await
