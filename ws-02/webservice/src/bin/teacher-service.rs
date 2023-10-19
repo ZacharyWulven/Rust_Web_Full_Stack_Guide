@@ -1,6 +1,9 @@
 use actix_web::{web, App, HttpServer};
 use std::io;
 use std::sync::Mutex;
+use dotenv::dotenv;
+use std::env;
+use sqlx::postgres::PgPoolOptions; // 数据库的连接池
 
 
 // 定义模块指明路径, 声明模块
@@ -16,6 +19,10 @@ mod state;
 #[path = "../models.rs"]
 mod models;
 
+#[path = "../db_access.rs"]
+mod db_access;
+
+
 // 引入 routers 模块所有内容
 use routers::*;
 use state::AppState;
@@ -23,12 +30,24 @@ use state::AppState;
 
 #[actix_rt::main]
 async fn main() -> io::Result<()> {
+
+    dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL is not setup");
+
+    let db_pool = PgPoolOptions::new()
+        .connect(&database_url)
+        .await
+        .unwrap();
+
     let shared_data = web::Data::new(
         // 初始化 AppState
         AppState {
             health_check_response: "I'm OK.".to_string(),
             visit_count: Mutex::new(0),
-            courses: Mutex::new(vec![]),
+            db: db_pool,       // 使用数据库改动
+            // courses: Mutex::new(vec![]),
         }
     );
 
@@ -46,5 +65,5 @@ async fn main() -> io::Result<()> {
         .configure(course_routes)
     };
 
-    HttpServer::new(app).bind("localhost:3000")?.run().await
+    HttpServer::new(app).bind("localhost:3003")?.run().await
 }

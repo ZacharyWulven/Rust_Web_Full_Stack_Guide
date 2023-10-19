@@ -1,5 +1,6 @@
 use std::sync::Mutex;
-use super::models::Course;
+// use super::models::Course;
+use sqlx::postgres::PgPool;
 
 pub struct AppState {
     // 响应字符串，这个字段共享于所有线程，初始化后它是一个不可变的
@@ -10,5 +11,6 @@ pub struct AppState {
      */
     pub visit_count: Mutex<u32>,
     
-    pub courses: Mutex<Vec<Course>>,
+    // pub courses: Mutex<Vec<Course>>,
+    pub db: PgPool, // 使用数据库新增
 }

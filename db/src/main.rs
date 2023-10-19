@@ -3,6 +3,7 @@ use dotenv::dotenv;
 use sqlx::postgres::PgPoolOptions;
 use std::env;
 use std::io;
+use std::sync::Mutex;
 
 
 #[derive(Debug)]
@@ -21,8 +22,8 @@ async fn main() -> io::Result<()> {
     // 调用 ok() 会把 Result 转为 Option 类型，即使失败了也会被忽略  
     dotenv().ok();
 
-    
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL is not in .env file");
+
 
     let db_pool = PgPoolOptions::new()
         .connect(&database_url)
