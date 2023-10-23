@@ -22,6 +22,8 @@ mod models;
 #[path = "../db_access.rs"]
 mod db_access;
 
+#[path = "../errors.rs"]
+mod errors;
 
 // 引入 routers 模块所有内容
 use routers::*;

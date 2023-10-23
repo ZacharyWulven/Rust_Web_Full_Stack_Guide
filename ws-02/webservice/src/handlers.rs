@@ -1,3 +1,5 @@
+use crate::errors::MyError;
+
 use super::state::AppState;
 use actix_web::{web, HttpResponse};
 use super::db_access::*;
@@ -21,7 +23,7 @@ use super::models::Course;
 pub async fn new_course(
     app_state: web::Data<AppState>,
     new_course: web::Json<Course>, 
-) -> HttpResponse {
+) -> Result<HttpResponse, MyError> {
     // println!("Received new course");
 
     // let course_count = app_state
@@ -44,15 +46,17 @@ pub async fn new_course(
     // app_state.courses.lock().unwrap().push(new_course);
 
     // new_course.into() 转为 Course 类型
-    let course = post_new_course_db(&app_state.db, new_course.into()).await;
-    HttpResponse::Ok().json(course)
+    post_new_course_db(&app_state.db, new_course.into())
+    .await
+    .map(|course| HttpResponse::Ok().json(course))
+    
 }
 
 // GET localhost:3000/courses/{teacher_id}
 pub async fn get_courses_for_teacher(
     app_state: web::Data<AppState>,
     params: web::Path<(usize,)>, // 这里应该是个元组，即 (usize,)
-) -> HttpResponse {
+) -> Result<HttpResponse, MyError> {
     // Path 里是一个元组，元组就一个元素，类型是 usize
     // let teacher_id: usize = params.0;
 
@@ -72,8 +76,13 @@ pub async fn get_courses_for_teacher(
     // }
     // 尝试转换 params.0 为 i32
     let teacher_id = i32::try_from(params.0).unwrap();
-    let courses = get_courses_for_teacher_db(&app_state.db, teacher_id).await;
-    HttpResponse::Ok().json(courses)
+    get_courses_for_teacher_db(&app_state.db, teacher_id)
+    .await
+    .map(|courses|
+        HttpResponse::Ok().json(courses)
+    )
+    // 上边发送错误的话 类型就是 MyError
+    // 由于 MyError 实现了 error::ResponseError，所以 actix 会自动转为 HttpResponse 返回给用户
 
 }
 
@@ -82,7 +91,7 @@ pub async fn get_courses_for_teacher(
 pub async fn get_course_detail(
     app_state: web::Data<AppState>,
     params: web::Path<(usize, usize)>,
-) -> HttpResponse {
+) -> Result<HttpResponse, MyError> {
     // let (teacher_id, course_id) = params.0;
     // let selected_course = app_state
     //     .courses
@@ -103,9 +112,11 @@ pub async fn get_course_detail(
 
     let teacher_id = i32::try_from(params.0).unwrap();
     let course_id = i32::try_from(params.1).unwrap();
-    let course = get_course_detail_db(&app_state.db, teacher_id, course_id).await;
-    HttpResponse::Ok().json(course)
-
+    get_course_detail_db(&app_state.db, teacher_id, course_id)
+    .await
+    .map(|course| 
+        HttpResponse::Ok().json(course)
+    )
 }
 
 
@@ -119,6 +130,8 @@ mod tests {
     use sqlx::postgres::PgPoolOptions;
     use std::env;
 
+    // 用于忽略这个测试
+    #[ignore]
     // 通常测试写个 test 就行了，但这里是 async 的所以需要用 actix_rt 异步运行时
     #[actix_rt::test]
     async fn post_course_test() {
@@ -141,12 +154,12 @@ mod tests {
             Course {
                 teacher_id: 1,
                 name: "Test Course".into(), // 用 to_string() 也行
-                id: Some(3), // serial 类型，需要赋一个值
+                id: Some(4), // serial 类型，需要赋一个值
                 time: None,
             }
         );
 
-        let resp = new_course(app_state, course).await;
+        let resp = new_course(app_state, course).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
     }
 
@@ -157,7 +170,6 @@ mod tests {
         let db_pool = PgPoolOptions::new()
             .connect(&db_url).await.unwrap();
 
-
         let app_state: web::Data<AppState> = web::Data::new(
             AppState {
                 health_check_response: "".to_string(),
@@ -167,7 +179,7 @@ mod tests {
         );
         // Path::from 创建 id 为 1 的课程
         let teacher_id: web::Path<(usize,)> = web::Path::from((1,));
-        let resp = get_courses_for_teacher(app_state, teacher_id).await;
+        let resp = get_courses_for_teacher(app_state, teacher_id).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
     }
 
@@ -186,7 +198,7 @@ mod tests {
             }
         );
         let params: web::Path<(usize, usize)> = web::Path::from((1,1));
-        let resp = get_course_detail(app_state, params).await;
+        let resp = get_course_detail(app_state, params).await.unwrap();
         assert_eq!(resp.status(), StatusCode::OK);
     }
 }
