@@ -7,7 +7,7 @@ use sqlx::postgres::PgPoolOptions; // 数据库的连接池
 
 
 // 定义模块指明路径, 声明模块
-#[path = "../handlers.rs"]
+#[path = "../handlers/mod.rs"]
 mod handlers;
 
 #[path = "../routers.rs"]
@@ -16,11 +16,11 @@ mod routers;
 #[path = "../state.rs"]
 mod state;
 
-#[path = "../models.rs"]
+#[path = "../models/mod.rs"]
 mod models;
 
-#[path = "../db_access.rs"]
-mod db_access;
+#[path = "../dbaccess/mod.rs"]
+mod dbaccess;
 
 #[path = "../errors.rs"]
 mod errors;

@@ -41,8 +41,9 @@ impl MyError {
 impl error::ResponseError for MyError {
     fn status_code(&self) -> StatusCode {
         match self {
-            MyError::DBError(msg) | MyError::ActixError(msg) => StatusCode::INTERNAL_SERVER_ERROR,
-            MyError::NotFound(msg) => StatusCode::NOT_FOUND,
+            // 未使用的变量前边加下划线 _ , 消除警告
+            MyError::DBError(_msg) | MyError::ActixError(_msg) => StatusCode::INTERNAL_SERVER_ERROR,
+            MyError::NotFound(_msg) => StatusCode::NOT_FOUND,
         }
     }
 
@@ -72,3 +73,9 @@ impl From<SQLxError> for MyError {
         MyError::DBError(err.to_string())
     }
 }
+
+// impl From<Infallible> for MyError {
+//     fn from(err: Infallible) -> Self {
+//         MyError::NotFound(err.to_string())
+//     }
+// }
