@@ -38,5 +38,5 @@
 
 
 fn main() {
-    
+    println!("run server1 main.rs !");
 }

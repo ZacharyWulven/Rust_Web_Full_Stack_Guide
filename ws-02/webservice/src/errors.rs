@@ -8,6 +8,7 @@ pub enum MyError {
     DBError(String),
     ActixError(String),
     NotFound(String),
+    InvalidInput(String), // 用户非法输入
 }
 
 #[derive(Debug, Serialize)]
@@ -30,6 +31,10 @@ impl MyError {
                 println!("Not found error occurred: {:?}", msg);
                 msg.into()
             }
+            MyError::InvalidInput(msg) => {
+                println!("Invalid parameters received: {:?}", msg);
+                msg.into()
+            }
         }
     }
 }
@@ -44,6 +49,7 @@ impl error::ResponseError for MyError {
             // 未使用的变量前边加下划线 _ , 消除警告
             MyError::DBError(_msg) | MyError::ActixError(_msg) => StatusCode::INTERNAL_SERVER_ERROR,
             MyError::NotFound(_msg) => StatusCode::NOT_FOUND,
+            MyError::InvalidInput(_msg) => StatusCode::BAD_REQUEST,
         }
     }
 

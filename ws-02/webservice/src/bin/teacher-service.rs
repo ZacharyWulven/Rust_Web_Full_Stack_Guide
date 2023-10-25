@@ -28,6 +28,7 @@ mod errors;
 // 引入 routers 模块所有内容
 use routers::*;
 use state::AppState;
+use errors::MyError;
 
 
 #[actix_rt::main]
@@ -63,9 +64,14 @@ async fn main() -> io::Result<()> {
     let app = move || {
         App::new()
         .app_data(shared_data.clone())
+        // 如果输入不合法就返回 BadRequest 
+        .app_data(web::JsonConfig::default().error_handler(|_err, _req| {
+            MyError::InvalidInput("Please provide valid Json input".to_string()).into()
+        }))
         .configure(general_routes)  // 添加路由注册，general_routes 就是  routers 里的方法
         .configure(course_routes)
+        .configure(teacher_routes)  // 添加 teacher 路由
     };
 
-    HttpServer::new(app).bind("localhost:3003")?.run().await
+    HttpServer::new(app).bind("localhost:3000")?.run().await
 }
