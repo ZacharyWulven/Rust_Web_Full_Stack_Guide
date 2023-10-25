@@ -1,3 +1,3 @@
 {
-  "rust-analyzer.linkedProjects": ["./webservice/Cargo.toml"]
+  "rust-analyzer.showUnlinkedFileNotification": false
 }
